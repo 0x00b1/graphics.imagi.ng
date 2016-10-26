@@ -1,0 +1,17 @@
+[Unit]
+After=docker.service
+Description=Cuda Compute Container
+Requires=docker.service
+
+[Service]
+ExecStart=/usr/bin/nvidia-docker start -a $CUDA_CONTAINER_ID
+ExecStartPre=/bin/bash -c "/bin/systemctl set-environment CUDA_CONTAINER_ID=$(cat /home/dockeruser/cuda_compute/container_id)"
+ExecStop=/usr/bin/nvidia-docker stop $CUDA_CONTAINER_ID
+PermissionsStartOnly=true
+Restart=on-failure
+RestartSec=10
+TimeoutStartSec=0
+User=dockeruser
+
+[Install]
+WantedBy=default.target

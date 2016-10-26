@@ -1,0 +1,17 @@
+[Unit]
+After=docker.service
+Description=Cuda Compute Container
+Requires=docker.service
+
+[Service]
+ExecStart=/usr/bin/docker start -a $CELLPROFILER_CONTAINER_ID
+ExecStartPre=/bin/bash -c "/bin/systemctl set-environment CELLPROFILER_CONTAINER_ID=$(cat /home/dockeruser/cellprofiler_container/container_id)"
+ExecStop=/usr/bin/docker stop $CELLPROFILER_CONTAINER_ID
+PermissionsStartOnly=true
+Restart=on-failure
+RestartSec=10
+TimeoutStartSec=0
+User=dockeruser
+
+[Install]
+WantedBy=default.target

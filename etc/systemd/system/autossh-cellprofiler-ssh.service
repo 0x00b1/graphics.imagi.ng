@@ -1,0 +1,12 @@
+[Unit]
+After=network.target
+Description=AutoSSH tunnel docker ssh to bastion on port 9222
+
+[Service]
+Environment="AUTOSSH_GATETIME=0"
+ExecStart=/usr/bin/autossh -M 0 -o "ServerAliveInterval 30" -o "ServerAliveCountMax 3" -NR 0.0.0.0:9222:127.0.0.1:9222 dockeruser@54.174.162.174
+Restart=always
+User=dockeruser
+
+[Install]
+WantedBy=default.target
