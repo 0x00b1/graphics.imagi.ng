@@ -125,6 +125,7 @@ RUN python-build 2.7.12 /usr/local/               && \
       joblib                                         \
       jsonschema                                     \
       jupyter                                        \
+      keras                                          \
       line_profiler                                  \
       lxml                                           \
       memory_profiler                                \
@@ -218,6 +219,7 @@ RUN python-build 3.5.2 /usr/local/                && \
       jsonschema                                     \
       jupyter                                        \
       jupyterhub                                     \
+      keras                                          \
       line_profiler                                  \
       lxml                                           \
       memory_profiler                                \
