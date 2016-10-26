@@ -155,6 +155,7 @@ RUN python-build 2.7.12 /usr/local/               && \
       statsmodels                                    \
       stevedore                                      \
       sympy                                          \
+      theano                                         \
       tqdm
 
 RUN cd /srv/src/                                               && \
@@ -250,6 +251,7 @@ RUN python-build 3.5.2 /usr/local/                && \
       statsmodels                                    \
       stevedore                                      \
       sympy                                          \
+      theano                                         \
       tqdm
 
 RUN cd /srv/src/tensorflow                                                                                            && \
