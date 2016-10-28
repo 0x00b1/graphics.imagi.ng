@@ -10,9 +10,13 @@ ENV CUDA_PATH "/usr/local/cuda"
 
 ENV LD_LIBRARY_PATH "$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/nvidia/lib64/:/usr/lib/x86_64-linux-gnu/:/usr/local/cuda/targets/x86_64-linux/lib/stubs/"
 
+ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/local/nvidia/bin:$PATH
+
 ENV PYTHON_CONFIGURE_OPTS "--enable-shared"
 
 ENV TERM linux
+
+ENV DEBIAN_FRONTEND noninteractive
 
 RUN ln -s /usr/local/nvidia/lib64/libcuda.so.1 /usr/lib/x86_64-linux-gnu/libcuda.so
 
@@ -27,14 +31,20 @@ RUN apt-get update                                && \
       cmake                                          \
       curl                                           \
       debconf-utils                                  \
+      gcc                                            \
+      g++                                            \
       gfortran                                       \
+      gnuplot                                        \
       git                                            \
+      hdf5-tools                                     \
       libatlas-base-dev                              \
       libboost-all-dev                               \
       libbz2-dev                                     \
+      libfftw3-dev                                   \
       libfreetype6-dev                               \
       libgflags-dev                                  \
       libgoogle-glog-dev                             \
+      libgraphicsmagick1-dev                         \
       libhdf5-serial-dev                             \
       libjpeg8-dev                                   \
       libleveldb-dev                                 \
@@ -46,13 +56,17 @@ RUN apt-get update                                && \
       libpng12-dev                                   \
       libprotobuf-dev                                \
       libreadline-dev                                \
+      libsdl2-dev                                    \
       libsnappy-dev                                  \
+      libsox-dev                                     \
+      libsox-fmt-all                                 \
       libsqlite3-dev                                 \
       libssl-dev                                     \
       libsuitesparse-dev                             \
       libtiff5-dev                                   \
       libxml2-dev                                    \
       libxslt1-dev                                   \
+      libzmq3-dev                                    \
       llvm                                           \
       make                                           \
       nano                                           \
@@ -68,6 +82,7 @@ RUN apt-get update                                && \
       python-wxgtk2.8                                \
       rsync                                          \
       software-properties-common                     \
+      sox                                            \
       supervisor                                     \
       swig                                           \
       tk-dev                                         \
@@ -93,6 +108,11 @@ RUN apt-get update                                                              
 RUN npm install --global      \
       configurable-http-proxy
 
+RUN git clone https://github.com/xianyi/OpenBLAS.git /srv/OpenBLAS
+RUN cd /srv/OpenBLAS && make NO_AFFINITY=1 USE_OPENMP=1 && make install
+
+ENV CMAKE_LIBRARY_PATH /opt/OpenBLAS/include:/opt/OpenBLAS/lib:$CMAKE_LIBRARY_PATH
+
 RUN mkdir -p /srv/src/ && cd /srv/src/            && \
     git clone https://github.com/yyuu/pyenv.git   && \
     cd pyenv/plugins/python-build                 && \
@@ -103,6 +123,10 @@ RUN git clone https://github.com/tensorflow/tensorflow /srv/src/tensorflow   && 
     sed -i 's/read b || true/#read b || true/g' util/python/python_config.sh
 
 COPY configure_auto /srv/src/tensorflow
+
+#####
+# Install python 2
+#
 
 RUN python-build 2.7.12 /usr/local/               && \
     pip install --upgrade pip                     && \
@@ -178,7 +202,7 @@ RUN echo 'PYTHONPATH="$PYTHONPATH:/srv/src/caffe/python"' >> /etc/environment
 
 RUN echo 'PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/local/nvidia/bin:/srv/src/caffe/build/tools:/srv/src/caffe/python"' > /etc/environment
 
-RUN echo 'LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/nvidia/lib64/:/srv/src/caffe/build/lib' >> /etc/environment
+RUN echo 'LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/nvidia/lib64/:/opt/OpenBLAS/lib:/srv/src/caffe/build/lib' >> /etc/environment
 
 RUN cd /srv/src/tensorflow                                                                                            && \
     export PYTHON_BIN_PATH=$(which python2)                                                                           && \
@@ -196,6 +220,10 @@ RUN cd /srv/src/tensorflow                                                      
     bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg                                      && \
     pip2 install /tmp/tensorflow_pkg/tensorflow-*.whl                                                                 && \
     rm /tmp/tensorflow_pkg/tensorflow*.whl
+
+#####
+# Install python 3
+#
 
 RUN python-build 3.5.2 /usr/local/                && \
     pip3 install --upgrade pip                    && \
@@ -272,6 +300,11 @@ RUN cd /srv/src/tensorflow                                                      
 
 RUN python2 -m ipykernel install
 
+
+#####
+# Install R
+#
+
 RUN echo "deb http://cran.cnr.berkeley.edu/bin/linux/ubuntu trusty/" >> /etc/apt/sources.list                                      && \
     gpg --keyserver keyserver.ubuntu.com --recv-key E084DAB9                                                                       && \
     gpg -a --export E084DAB9 | apt-key add -                                                                                       && \
@@ -287,6 +320,56 @@ RUN apt-get install -y --no-install-recommends gdebi-core                && \
     wget https://download2.rstudio.org/rstudio-server-0.99.903-amd64.deb && \
     gdebi --n rstudio-server-0.99.903-amd64.deb                          && \
     rstudio-server verify-installation
+
+#####
+# Install torch
+#
+
+RUN git clone https://github.com/torch/luajit-rocks.git /srv/luajit-rocks
+RUN cd /srv/luajit-rocks                                                                     && \
+    mkdir build                                                                              && \
+    cd build                                                                                 && \
+    git checkout master                                                                      && \
+    git pull                                                                                 && \
+    rm -f CMakeCache.txt                                                                     && \
+    cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=Release -DWITH_LUAJIT21=ON && \
+    make                                                                                     && \
+    make install                                                                             && \
+    luarocks install sundown                                                                 && \
+    luarocks install cwrap                                                                   && \
+    luarocks install paths                                                                   && \
+    luarocks install torch                                                                   && \
+    luarocks install nn                                                                      && \
+    luarocks install dok                                                                     && \
+    luarocks install gnuplot                                                                 && \
+    luarocks install luafilesystem                                                           && \
+    luarocks install penlight                                                                && \
+    luarocks install sys                                                                     && \
+    luarocks install image                                                                   && \
+    luarocks install optim                                                                   && \
+    luarocks install lua-cjson                                                               && \
+    luarocks install trepl                                                                   && \
+    luarocks install nnx                                                                     && \
+    luarocks install threads                                                                 && \
+    luarocks install graphicsmagick                                                          && \
+    luarocks install argcheck                                                                && \
+    luarocks install audio                                                                   && \
+    luarocks install signal                                                                  && \
+    luarocks install gfx.js                                                                  && \
+    luarocks install cutorch                                                                 && \
+    luarocks install cunn                                                                    && \
+    luarocks install loadcaffe                                                               && \
+    luarocks install nninit                                                                  && \
+    git clone https://github.com/deepmind/torch-hdf5.git /srv/torch-hdf5                     && \
+    cd /srv/torch-hdf5                                                                       && \
+    luarocks make hdf5-0-0.rockspec LIBHDF5_LIBDIR="/usr/lib/x86_64-linux-gnu/"              && \
+    git clone https://github.com/facebook/iTorch.git /srv/itorch                             && \
+    cd /srv/itorch                                                                           && \
+    luarocks make
+
+#####
+# Configuration
+#
 
 RUN mkdir /srv/jupyter
 
@@ -320,6 +403,6 @@ ENV PYTHONPATH=$PYTHONPATH:/srv/src/caffe/python
 
 ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/local/nvidia/bin:/srv/src/caffe/build/tools:/srv/src/caffe/python:$PATH
 
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/nvidia/lib64/:/srv/src/caffe/build/lib
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/nvidia/lib64/:/srv/src/caffe/build/lib:/opt/OpenBLAS/lib
 
 CMD ["supervisord", "-c", "/srv/supervisord/supervisord.conf"]
