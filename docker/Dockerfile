@@ -247,7 +247,6 @@ RUN python-build 3.5.2 /usr/local/                && \
       joblib                                         \
       jsonschema                                     \
       jupyter                                        \
-      jupyterhub                                     \
       keras                                          \
       line_profiler                                  \
       lxml                                           \
@@ -281,6 +280,11 @@ RUN python-build 3.5.2 /usr/local/                && \
       sympy                                          \
       theano                                         \
       tqdm
+
+RUN cd /src/src
+    git clone https://github.com/jupyterhub/jupyterhub
+    cd jupyterhub
+    pip3 install -r dev-requirements.txt -e .
 
 RUN cd /srv/src/tensorflow                                                                                            && \
     export PYTHON_BIN_PATH=$(which python3)                                                                           && \
