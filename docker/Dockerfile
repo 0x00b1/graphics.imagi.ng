@@ -281,10 +281,17 @@ RUN python-build 3.5.2 /usr/local/                && \
       theano                                         \
       tqdm
 
-RUN cd /src/src
-    git clone https://github.com/jupyterhub/jupyterhub
-    cd jupyterhub
-    pip3 install -r dev-requirements.txt -e .
+#
+# JupyterHub
+#
+
+RUN cd /src/src                                                  && \
+    git clone https://github.com/jupyterhub/jupyterhub           && \
+    cd jupyterhub                                                && \
+    npm install                                                  && \
+    pip3 install --requirement dev-requirements.txt --editable . && \
+    python3 setup.py js                                          && \
+    python3 setup.py css
 
 RUN cd /srv/src/tensorflow                                                                                            && \
     export PYTHON_BIN_PATH=$(which python3)                                                                           && \
