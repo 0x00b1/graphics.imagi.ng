@@ -371,9 +371,15 @@ RUN cd /srv/luajit-rocks                                                        
     luarocks install cunn                                                                    && \
     luarocks install loadcaffe                                                               && \
     luarocks install nninit                                                                  && \
+    
+    git clone https://github.com/soumith/cudnn.torch.git /srv/cudnn.torch                    && \
+    cd /srv/cudnn.torch                                                                      && \
+    luarocks install cudnn-scm-1.rockspec                                                    && \
+
     git clone https://github.com/deepmind/torch-hdf5.git /srv/torch-hdf5                     && \
     cd /srv/torch-hdf5                                                                       && \
     luarocks make hdf5-0-0.rockspec LIBHDF5_LIBDIR="/usr/lib/x86_64-linux-gnu/"              && \
+    
     git clone https://github.com/facebook/iTorch.git /srv/itorch                             && \
     cd /srv/itorch                                                                           && \
     luarocks make
