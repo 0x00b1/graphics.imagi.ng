@@ -1,11 +1,6 @@
 #! /bin/bash
 
-docker rm $(cat /home/dockeruser/cuda_compute/container_id)
-
-rm /home/dockeruser/cuda_compute/container_id
-
 nvidia-docker create                                   \
-  --cidfile /home/dockeruser/cuda_compute/container_id \
   --env-file=env                                       \
   --name cuda_compute                                  \
   -p 9100:8000                                         \
