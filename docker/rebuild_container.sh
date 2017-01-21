@@ -1,8 +1,8 @@
 #! /bin/bash
 
-cd /home/dockeruser/cuda_compute/
+cd /home/dockeruser/graphics.imagi.ng/docker
 
-CONTAINER_ID=$(cat /home/dockeruser/cuda_compute/container_id)
+CONTAINER_ID=$(cat /home/dockeruser/graphics.imagi.ng/docker/container_id)
 
 NUM_PYTHON_PROCESSES=$(docker top $CONTAINER_ID | grep -v -e 'supervisord' | grep -v -e 'jupyterhub ' | grep -ic -E "python|rsession")
 
