@@ -285,7 +285,7 @@ RUN python-build 3.5.2 /usr/local/                && \
 # JupyterHub
 #
 
-RUN cd /src/src                                                  && \
+RUN cd /srv/src                                                  && \
     git clone https://github.com/jupyterhub/jupyterhub           && \
     cd jupyterhub                                                && \
     npm install                                                  && \
