@@ -182,6 +182,32 @@ RUN python-build 2.7.12 /usr/local/               && \
       theano                                         \
       tqdm
 
+# OpenCV
+RUN cd /srv/src                                                                                && \
+    git clone https://github.com/Itseez/opencv.git                                             && \
+    git clone https://github.com/Itseez/opencv_contrib.git                                     && \
+    cmake                                                                                         \
+        -DBUILD_DOCS=OFF                                                                          \
+        -DBUILD_EXAMPLES=OFF                                                                      \
+        -DBUILD_PERF_TESTS=OFF                                                                    \
+        -DBUILD_TESTS=OFF                                                                         \
+        -DCMAKE_BUILD_TYPE=RELEASE                                                                \
+        -DCMAKE_INSTALL_PREFIX=/usr/local                                                         \
+        -DOPENCV_ENABLE_NONFREE=ON                                                                \
+        -DOPENCV_EXTRA_MODULES_PATH=./opencv_contrib/modules                                      \
+        -DPYTHON2_EXECUTABLE=/usr/local/bin/python2                                               \
+        -DPYTHON2_NUMPY_INCLUDE_DIRS=/usr/local/lib/python2.7/site-packages/numpy/core/include    \
+        -DPYTHON3_EXECUTABLE=/usr/local/bin/python3                                               \
+        -DPYTHON3_NUMPY_INCLUDE_DIRS=/usr/local/lib/python3.5/site-packages/numpy/core/include    \
+        -DWITH_CUBLAS=ON                                                                          \
+        -DWITH_CUDA=ON                                                                            \
+        -DWITH_CUFFT=ON                                                                           \
+        -DWITH_EIGEN=ON                                                                           \
+        -DWITH_NVCUVID=ON                                                                         \
+        ./opencv/CMakeLists.txt                                                                && \
+    make -j                                                                                    && \
+    make install
+
 RUN cd /srv/src/                                               && \
     git clone https://github.com/CellProfiler/CellProfiler.git && \
     cd CellProfiler                                            && \
