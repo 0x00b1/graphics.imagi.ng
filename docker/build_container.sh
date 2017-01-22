@@ -1,3 +1,3 @@
 #! /bin/bash
 
-nvidia-docker build -t cuda_compute /home/dockeruser/graphics.imagi.ng/docker
+nvidia-docker build --no-cache=true -t cuda_compute /home/dockeruser/graphics.imagi.ng/docker
