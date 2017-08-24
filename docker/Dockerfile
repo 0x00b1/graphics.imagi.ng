@@ -69,6 +69,7 @@ RUN apt-get update                                && \
       libzmq3-dev                                    \
       llvm                                           \
       make                                           \
+      mosh                                           \
       nano                                           \
       nodejs-legacy                                  \
       npm                                            \
